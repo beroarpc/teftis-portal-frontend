@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import SoruşturmaListesi from "./pages/SorusturmaListesi";
-import SoruşturmaDetay from "./pages/SorusturmaDetay";
+import SorusturmaListesi from "./pages/SorusturmaListesi";
+import SorusturmaDetay from "./pages/SorusturmaDetay";
 
 function App() {
   return (
