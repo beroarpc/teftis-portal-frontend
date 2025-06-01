@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import { InvestigationList } from "./pages/InvestigationList";
+import { Login } from "./pages/Login";
+import { Dashboard } from "./pages/Dashboard";
+import { SoruşturmaListesi } from "./pages/SorusturmaListesi";
 import { SoruşturmaDetay } from './pages/SorusturmaDetay';
 
 function App() {
@@ -11,8 +11,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/sorusturmalar" element={<InvestigationList />} />
-        <Route path="/sorusturma-detay" element={<InvestigationDetail />} />
+        <Route path="/sorusturmalar" element={<SoruşturmaListesi />} />
+        <Route path="/sorusturma-detay" element={<SoruşturmaDetay />} />
       </Routes>
     </Router>
   );
