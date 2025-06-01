@@ -1,12 +1,12 @@
 // src/pages/Dashboard.js
 
-const Dashboard = () => {
+import React from "react";
+
+export function Dashboard() {
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold">Dashboard Sayfası</h1>
-      <p>Hoş geldiniz, müfettiş!</p>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Teftiş Dashboard</h1>
+      <p>Hoş geldiniz, sayın başkanım.</p>
     </div>
   );
-};
-
-export default Dashboard;
+}
