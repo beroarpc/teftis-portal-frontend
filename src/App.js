@@ -1,9 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Login } from "./pages/Login";
-import { Dashboard } from "./pages/Dashboard";
-import { SoruşturmaListesi } from "./pages/SorusturmaListesi";
-import { SoruşturmaDetay } from "./pages/SorusturmaDetay";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import SoruşturmaListesi from "./pages/SorusturmaListesi";
+import SoruşturmaDetay from "./pages/SorusturmaDetay";
 
 function App() {
   return (
@@ -19,4 +19,3 @@ function App() {
 }
 
 export default App;
-
