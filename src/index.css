@@ -1,8 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Örnek ekstra stiller eklemek isterseniz aşağıya yazabilirsiniz */
-/* body {
-  @apply bg-gray-100 text-gray-900;
-} */
