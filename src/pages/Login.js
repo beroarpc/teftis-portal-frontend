@@ -21,13 +21,12 @@ export function Login() {
         body: JSON.stringify({ username, password }),
       });
 
-      if (!response.ok) {
-        throw new Error("Giriş başarısız");
-      }
+      if (!response.ok) throw new Error("Giriş başarısız");
 
       const data = await response.json();
-      console.log("Giriş başarılı:", data);
-      navigate("/dashboard"); // başarılı giriş sonrası yönlendirme
+      localStorage.setItem("token", data.access_token); 
+      console.log("Token:", data.access_token);
+      navigate("/dashboard");  
     } catch (error) {
       console.error("Giriş hatası:", error);
       alert("Kullanıcı adı veya şifre hatalı.");
