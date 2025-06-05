@@ -1,18 +1,60 @@
 // src/pages/Dashboard.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
-export function Dashboard() {
+export default function Dashboard() {
   const navigate = useNavigate();
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    fetch(`${API_BASE_URL}/dashboard-data`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (json) setData(json);
+      })
+      .catch((err) => {
+        console.error("Veri alınamadı:", err);
+        navigate("/login");
+      });
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
+  if (!data) {
+    return (
+      <div className="p-6">
+        <h1 className="text-3xl font-bold mb-4">Teftiş Dashboard</h1>
+        <p>Veriler yükleniyor...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Teftiş Dashboard</h1>
         <button
           onClick={handleLogout}
@@ -21,7 +63,9 @@ export function Dashboard() {
           Çıkış Yap
         </button>
       </div>
-      <p>Veriler yükleniyor...</p>
+      <p className="mb-2">{data.karsilama}</p>
+      <p className="mb-2">Denetim sayısı: {data.denetim_sayisi}</p>
+      <p>Aktif soruşturma: {data.aktif_soruşturma}</p>
     </div>
   );
 }
