@@ -1,3 +1,4 @@
+// src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
@@ -9,8 +10,6 @@ export function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Kullanıcı Adı:", username);
-    console.log("Şifre:", password);
 
     try {
       const response = await fetch(`${API_BASE_URL}/login`, {
@@ -21,15 +20,16 @@ export function Login() {
         body: JSON.stringify({ username, password }),
       });
 
-      if (!response.ok) throw new Error("Giriş başarısız");
+      if (!response.ok) {
+        throw new Error("Giriş başarısız");
+      }
 
       const data = await response.json();
-      localStorage.setItem("token", data.access_token); 
-      console.log("Token:", data.access_token);
-      navigate("/dashboard");  
+      localStorage.setItem("token", data.access_token);
+      navigate("/dashboard");
     } catch (error) {
-      console.error("Giriş hatası:", error);
       alert("Kullanıcı adı veya şifre hatalı.");
+      console.error("Giriş hatası:", error);
     }
   };
 
