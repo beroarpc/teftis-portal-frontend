@@ -1,14 +1,37 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 export function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Kullanıcı Adı:", username);
     console.log("Şifre:", password);
-    // Buraya ileride API isteği eklenecek
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Giriş başarısız");
+      }
+
+      const data = await response.json();
+      console.log("Giriş başarılı:", data);
+      navigate("/dashboard"); // başarılı giriş sonrası yönlendirme
+    } catch (error) {
+      console.error("Giriş hatası:", error);
+      alert("Kullanıcı adı veya şifre hatalı.");
+    }
   };
 
   return (
