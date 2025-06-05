@@ -10,37 +10,34 @@ export default function Dashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login");
+      navigate("/"); 
       return;
     }
 
     fetch(`${API_BASE_URL}/dashboard-data`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
         if (res.status === 401) {
           localStorage.removeItem("token");
-          navigate("/login");
-          return;
+          navigate("/");
         }
         return res.json();
       })
-      .then((json) => {
-        if (json) setData(json);
+      .then((data) => {
+        setData(data);
       })
       .catch((err) => {
-        console.error("Veri alınamadı:", err);
-        navigate("/login");
+        console.error("Veri çekme hatası:", err);
       });
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   if (!data) {
@@ -54,7 +51,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Teftiş Dashboard</h1>
         <button
           onClick={handleLogout}
@@ -64,7 +61,7 @@ export default function Dashboard() {
         </button>
       </div>
       <p className="mb-2">{data.karsilama}</p>
-      <p className="mb-2">Denetim sayısı: {data.denetim_sayisi}</p>
+      <p>Denetim sayısı: {data.denetim_sayisi}</p>
       <p>Aktif soruşturma: {data.aktif_soruşturma}</p>
     </div>
   );
