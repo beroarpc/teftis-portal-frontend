@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -13,57 +18,58 @@ export default function Dashboard() {
       return;
     }
 
-    fetch(`${API_BASE_URL}/dashboard-data`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Token geçersiz veya süresi dolmuş");
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/dashboard-data`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Yetki hatası");
         }
-        return res.json();
-      })
-      .then((data) => {
-        setData(data);
-      })
-      .catch((err) => {
-        console.error("Veri çekme hatası:", err);
-        localStorage.removeItem("token");
-        navigate("/login");
-      });
+        const dashboardData = await response.json();
+        setData(dashboardData);
+      } catch (error) {
+        console.error("Dashboard veri hatası:", error);
+        handleLogout();
+      }
+    };
+
+    fetchDashboardData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   if (!data) {
-    return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-4">Teftiş Dashboard</h1>
-        <p>Veriler yükleniyor...</p>
-      </div>
-    );
+    return <div className="p-6">Yükleniyor...</div>;
   }
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Teftiş Dashboard</h1>
         <button
           onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded"
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
         >
           Çıkış Yap
         </button>
       </div>
-      <p className="mb-2">{data.karsilama}</p>
-      <p>Denetim sayısı: {data.denetim_sayisi}</p>
-      <p>Aktif soruşturma: {data.aktif_soruşturma}</p>
-      <p>Rolünüz: {data.rol}</p>
+
+      <nav className="mb-6 border-b pb-4">
+        <Link 
+          to="/sorusturmalar"
+          className="text-lg text-blue-600 hover:underline font-semibold"
+        >
+          Soruşturmaları Görüntüle
+        </Link>
+      </nav>
+
+      <div className="mt-4">
+        <p className="text-xl mb-2">{data.karsilama}</p>
+        <p>Denetim sayısı: {data.denetim_sayisi}</p>
+        <p>Aktif soruşturma: {data.aktif_soruşturma}</p>
+        <p>Rolünüz: {data.rol}</p>
+      </div>
     </div>
   );
 }
