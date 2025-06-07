@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
@@ -12,14 +12,11 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
     if (!sorusturmaNo || !konu) {
       setError('Soruşturma No ve Konu alanları zorunludur.');
       return;
     }
-
     const token = localStorage.getItem('token');
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/sorusturmalar`, {
         method: 'POST',
@@ -29,13 +26,10 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
         },
         body: JSON.stringify({ sorusturma_no: sorusturmaNo, konu: konu }),
       });
-
       if (!response.ok) {
         throw new Error('Soruşturma oluşturulamadı.');
       }
-
-      const yeniSorusturma = await response.json();
-      onInvestigationAdded(yeniSorusturma);
+      onInvestigationAdded();
       onClose();
     } catch (err) {
       setError(err.message);
@@ -89,9 +83,10 @@ export function InvestigationList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
 
-  const fetchSorusturmalar = async () => {
+  const fetchInitialData = useCallback(async () => {
     setLoading(true);
     const token = localStorage.getItem('token');
     if (!token) {
@@ -100,25 +95,47 @@ export function InvestigationList() {
     }
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Veri çekilemedi.');
-      const data = await response.json();
-      setSorusturmalar(data);
+      const [sorusturmalarRes, dashboardRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/sorusturmalar`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      if (!sorusturmalarRes.ok || !dashboardRes.ok) throw new Error('Veri çekilemedi.');
+      
+      const sorusturmalarData = await sorusturmalarRes.json();
+      const dashboardData = await dashboardRes.json();
+
+      setSorusturmalar(sorusturmalarData);
+      setUserRole(dashboardData.rol);
+
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchSorusturmalar();
   }, [navigate]);
 
-  const handleInvestigationAdded = (yeniSorusturma) => {
-    fetchSorusturmalar();
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+  
+  const handleOnayla = async (sorusturmaId) => {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/sorusturmalar/</span>{sorusturmaId}/onayla`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Onaylama işlemi başarısız.');
+        fetchInitialData(); // Onaylama sonrası listeyi yenile
+    } catch(err) {
+        alert(err.message);
+    }
+  };
+
+
+  const handleInvestigationAdded = () => {
+    fetchInitialData();
   };
 
   if (loading) return <div className="p-8 text-center text-lg">Yükleniyor...</div>;
@@ -138,13 +155,15 @@ export function InvestigationList() {
             <p className="mt-2 text-sm text-gray-700">Sistemde kayıtlı tüm soruşturmaların listesi.</p>
           </div>
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Yeni Soruşturma Ekle
-            </button>
+            {(userRole === 'başkan' || userRole === 'müfettiş') && (
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Yeni Soruşturma Ekle
+              </button>
+            )}
           </div>
         </div>
         <div className="mt-8 flow-root">
@@ -157,6 +176,7 @@ export function InvestigationList() {
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Konu</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Oluşturma Tarihi</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Durum</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Onay Durumu</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -171,23 +191,4 @@ export function InvestigationList() {
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{sorusturma.konu}</td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{sorusturma.olusturma_tarihi}</td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                            {sorusturma.durum}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="4" className="text-center py-4 text-gray-500">Henüz kayıtlı bir soruşturma bulunmamaktadır.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
+                          <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{sorusturma.durum}</span>
