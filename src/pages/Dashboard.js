@@ -5,6 +5,7 @@ import { API_BASE_URL } from "../config";
 export default function Dashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  console.log("Gelen data:", data);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -29,6 +30,7 @@ export default function Dashboard() {
       .then((data) => {
         console.log("Backend'den gelen veri:", data); 
         setData(data);
+        console.log("Gelen data:", data);
       })
       .catch((err) => {
         console.error("Veri çekme hatası:", err);
@@ -40,14 +42,14 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  if (!data) {
-    return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-4">Teftiş Dashboard</h1>
-        <p>Veriler yükleniyor...</p>
-      </div>
-    );
-  }
+  if (!data || !data.karsilama) {
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Teftiş Dashboard</h1>
+      <p>Veriler yükleniyor...</p>
+    </div>
+  );
+}
 
   return (
     <div className="p-6">
