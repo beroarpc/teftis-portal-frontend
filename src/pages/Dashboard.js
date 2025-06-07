@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 
 export default function Dashboard() {
-  const [data, setData] = useState(null);
   const navigate = useNavigate();
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -14,21 +14,23 @@ export default function Dashboard() {
     }
 
     fetch(`${API_BASE_URL}/dashboard-data`, {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Yetkisiz veya hatalı token.");
+          throw new Error("Token geçersiz veya süresi dolmuş");
         }
         return res.json();
       })
       .then((data) => {
         setData(data);
       })
-      .catch((error) => {
-        console.error("Veri çekme hatası:", error);
+      .catch((err) => {
+        console.error("Veri çekme hatası:", err);
+        localStorage.removeItem("token");
         navigate("/login");
       });
   }, [navigate]);
