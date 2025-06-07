@@ -17,9 +17,11 @@ export default function Dashboard() {
     fetch(`${API_BASE_URL}/dashboard-data`, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-    })
+     })
+
       .then((res) => {
         if (res.status === 401) {
           localStorage.removeItem("token");
