@@ -2,7 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import { InvestigationList } from "./pages/InvestigationList";
+
+import InvestigationList from "./pages/InvestigationList";
 import { InvestigationDetail } from "./pages/InvestigationDetail";
 
 function App() {

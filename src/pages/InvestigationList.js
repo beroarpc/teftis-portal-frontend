@@ -1,151 +1,227 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
-export function InvestigationDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [sorusturma, setSorusturma] = useState(null);
+function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
+  const [sorusturmaNo, setSorusturmaNo] = useState('');
+  const [konu, setKonu] = useState('');
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!sorusturmaNo || !konu) {
+      setError('Soruşturma No ve Konu alanları zorunludur.');
+      return;
+    }
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ sorusturma_no: sorusturmaNo, konu: konu }),
+      });
+      if (!response.ok) {
+        throw new Error('Soruşturma oluşturulamadı.');
+      }
+      onInvestigationAdded();
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6">Yeni Soruşturma Ekle</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="sorusturmaNo" className="block text-sm font-medium text-gray-700">Soruşturma No</label>
+            <input
+              type="text"
+              id="sorusturmaNo"
+              value={sorusturmaNo}
+              onChange={(e) => setSorusturmaNo(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label htmlFor="konu" className="block text-sm font-medium text-gray-700">Konu</label>
+            <textarea
+              id="konu"
+              rows="4"
+              value={konu}
+              onChange={(e) => setKonu(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            ></textarea>
+          </div>
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+          <div className="flex items-center justify-end space-x-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+              İptal
+            </button>
+            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+              Kaydet
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// DEĞİŞİKLİK BURADA: 'export function' yerine 'export default function' kullanıyoruz.
+export default function InvestigationList() {
+  const [sorusturmalar, setSorusturmalar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
 
-  const fetchDetails = useCallback(async () => {
+  const fetchInitialData = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
     }
+    
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${id}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Soruşturma detayları çekilemedi.');
-      const data = await response.json();
-      setSorusturma(data);
+      const [sorusturmalarRes, dashboardRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/sorusturmalar`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      if (!sorusturmalarRes.ok || !dashboardRes.ok) {
+        throw new Error('Veri çekilemedi.');
+      }
+      
+      const sorusturmalarData = await sorusturmalarRes.json();
+      const dashboardData = await dashboardRes.json();
+
+      setSorusturmalar(sorusturmalarData);
+      setUserRole(dashboardData.rol);
+
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [id, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
-    fetchDetails();
-  }, [fetchDetails]);
-
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    fetchInitialData();
+  }, [fetchInitialData]);
+  
+  const handleOnayla = async (sorusturmaId) => {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${sorusturmaId}/onayla`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Onaylama işlemi başarısız.');
+        fetchInitialData();
+    } catch(err) {
+        console.error("Onaylama hatası:", err.message);
+    }
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert('Lütfen bir dosya seçin.');
-      return;
-    }
-    setUploading(true);
-    const token = localStorage.getItem('token');
-    const formData = new FormData();
-    formData.append('file', selectedFile);
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${id}/upload`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-      if (!response.ok) throw new Error('Dosya yüklenemedi.');
-      alert('Dosya başarıyla yüklendi!');
-      setSelectedFile(null);
-      fetchDetails();
-    } catch (err) {
-      alert(`Hata: ${err.message}`);
-    } finally {
-      setUploading(false);
-    }
+  const handleInvestigationAdded = () => {
+    fetchInitialData();
   };
 
   if (loading) return <div className="p-8 text-center text-lg">Yükleniyor...</div>;
   if (error) return <div className="p-8 text-center text-lg text-red-600">Hata: {error}</div>;
-  if (!sorusturma) return null;
-
-  const onayDurumuClasses = sorusturma.onay_durumu === 'Onaylandı'
-    ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
-    : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20';
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="mb-6">
-        <Link to="/sorusturmalar" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-          &larr; Soruşturma Listesine Geri Dön
-        </Link>
-      </div>
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Soruşturma Detayı: {sorusturma.sorusturma_no}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 border-b pb-6">
-          <div>
-            <h3 className="font-semibold text-gray-600">Konu:</h3>
-            <p className="text-gray-800">{sorusturma.konu}</p>
+    <>
+      <AddInvestigationModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onInvestigationAdded={handleInvestigationAdded}
+      />
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto">
+            <h1 className="text-2xl font-semibold leading-6 text-gray-900">Soruşturmalar</h1>
+            <p className="mt-2 text-sm text-gray-700">Sistemde kayıtlı tüm soruşturmaların listesi.</p>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-600">Oluşturma Tarihi:</h3>
-            <p className="text-gray-800">{sorusturma.olusturma_tarihi}</p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-600">Durum:</h3>
-            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{sorusturma.durum}</span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-600">Onay Durumu:</h3>
-            <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${onayDurumuClasses}`}>
-              {sorusturma.onay_durumu}
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Dosya Yönetimi</h3>
-          <div className="p-4 border rounded-lg bg-gray-50">
-            <h4 className="font-semibold text-gray-700 mb-3">Yeni Dosya Yükle</h4>
-            <div className="flex items-center space-x-4">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-              />
+          <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            {(userRole === 'başkan' || userRole === 'müfettiş') && (
               <button
-                onClick={handleUpload}
-                disabled={!selectedFile || uploading}
-                className="flex-shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:bg-gray-400"
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                {uploading ? 'Yükleniyor...' : 'Yükle'}
+                Yeni Soruşturma Ekle
               </button>
-            </div>
-          </div>
-          
-          <div className="mt-6">
-            <h4 className="font-semibold text-gray-700 mb-3">Yüklenmiş Dosyalar</h4>
-            {sorusturma.dosyalar.length > 0 ? (
-              <ul className="divide-y divide-gray-200 border rounded-md">
-                {sorusturma.dosyalar.map(dosya => (
-                  <li key={dosya.id} className="px-4 py-3 flex justify-between items-center">
-                    <span className="text-gray-700">{dosya.dosya_adi}</span>
-                    <a href={dosya.dosya_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                      Görüntüle / İndir
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500 text-sm">Bu soruşturmaya henüz dosya yüklenmemiş.</p>
             )}
           </div>
         </div>
+        <div className="mt-8 flow-root">
+          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead>
+                  <tr>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Soruşturma No</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Konu</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Oluşturma Tarihi</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Durum</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Onay Durumu</th>
+                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0"><span className="sr-only">Onayla</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {sorusturmalar.length > 0 ? (
+                    sorusturmalar.map((sorusturma) => (
+                      <tr key={sorusturma.id}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                          <Link to={`/sorusturma-detay/${sorusturma.id}`} className="text-blue-600 hover:underline">
+                            {sorusturma.sorusturma_no}
+                          </Link>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{sorusturma.konu}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{sorusturma.olusturma_tarihi}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{sorusturma.durum}</span>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                           {sorusturma.onay_durumu === 'Onaylandı' ? (
+                              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">{sorusturma.onay_durumu}</span>
+                           ) : (
+                              <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">{sorusturma.onay_durumu}</span>
+                           )}
+                        </td>
+                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                           {userRole === 'başkan' && sorusturma.onay_durumu === 'Onay Bekliyor' && (
+                             <button onClick={() => handleOnayla(sorusturma.id)} className="text-indigo-600 hover:text-indigo-900">Onayla</button>
+                           )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4 text-gray-500">Henüz kayıtlı bir soruşturma bulunmamaktadır.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
