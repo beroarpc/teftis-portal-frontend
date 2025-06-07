@@ -87,20 +87,22 @@ export function InvestigationList() {
   const navigate = useNavigate();
 
   const fetchInitialData = useCallback(async () => {
-    setLoading(true);
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
       return;
     }
     
+    setLoading(true);
     try {
       const [sorusturmalarRes, dashboardRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/sorusturmalar`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
-      if (!sorusturmalarRes.ok || !dashboardRes.ok) throw new Error('Veri çekilemedi.');
+      if (!sorusturmalarRes.ok || !dashboardRes.ok) {
+        throw new Error('Veri çekilemedi.');
+      }
       
       const sorusturmalarData = await sorusturmalarRes.json();
       const dashboardData = await dashboardRes.json();
@@ -122,17 +124,16 @@ export function InvestigationList() {
   const handleOnayla = async (sorusturmaId) => {
     const token = localStorage.getItem('token');
     try {
-        const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/sorusturmalar/</span>{sorusturmaId}/onayla`, {
+        const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${sorusturmaId}/onayla`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Onaylama işlemi başarısız.');
-        fetchInitialData(); // Onaylama sonrası listeyi yenile
+        fetchInitialData();
     } catch(err) {
-        alert(err.message);
+        console.error("Onaylama hatası:", err.message);
     }
   };
-
 
   const handleInvestigationAdded = () => {
     fetchInitialData();
@@ -192,3 +193,30 @@ export function InvestigationList() {
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{sorusturma.olusturma_tarihi}</td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{sorusturma.durum}</span>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                           {sorusturma.onay_durumu === 'Onaylandı' ? (
+                              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">{sorusturma.onay_durumu}</span>
+                           ) : (
+                              <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">{sorusturma.onay_durumu}</span>
+                           )}
+                           {userRole === 'başkan' && sorusturma.onay_durumu === 'Onay Bekliyor' && (
+                             <button onClick={() => handleOnayla(sorusturma.id)} className="ml-2 px-2 py-1 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Onayla</button>
+                           )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="text-center py-4 text-gray-500">Henüz kayıtlı bir soruşturma bulunmamaktadır.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
