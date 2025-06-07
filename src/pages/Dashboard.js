@@ -27,6 +27,7 @@ export default function Dashboard() {
         return res.json();
       })
       .then((data) => {
+        console.log("Backend'den gelen veri:", data); 
         setData(data);
       })
       .catch((err) => {
@@ -62,7 +63,7 @@ export default function Dashboard() {
       <p className="mb-2">{data.karsilama}</p>
       <p>Denetim sayısı: {data.denetim_sayisi}</p>
       <p>Aktif soruşturma: {data.aktif_soruşturma}</p>
-      <p>Rolünüz: {data.role}</p>
+      <p>Rolünüz: {data.rol}</p>
     </div>
   );
 }
