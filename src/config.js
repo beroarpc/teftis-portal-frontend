@@ -1,2 +1,1 @@
-// src/config.js
-export const API_BASE_URL = "https://teftis-portal-backend.onrender.com";
+export const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
