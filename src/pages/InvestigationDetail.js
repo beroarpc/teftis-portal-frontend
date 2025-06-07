@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
 export function InvestigationDetail() {
@@ -19,7 +19,7 @@ export function InvestigationDetail() {
     }
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${id}`, {
+      const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/sorusturmalar/</span>{id}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Soruşturma detayları çekilemedi.');
@@ -51,7 +51,7 @@ export function InvestigationDetail() {
     formData.append('file', selectedFile);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${id}/upload`, {
+      const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/sorusturmalar/</span>{id}/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
@@ -73,11 +73,16 @@ export function InvestigationDetail() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="mb-6">
+        <Link to="/sorusturmalar" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+          &larr; Soruşturma Listesine Geri Dön
+        </Link>
+      </div>
       <div className="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
           Soruşturma Detayı: {sorusturma.sorusturma_no}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 border-b pb-6">
           <div>
             <h3 className="font-semibold text-gray-600">Konu:</h3>
             <p className="text-gray-800">{sorusturma.konu}</p>
@@ -97,41 +102,18 @@ export function InvestigationDetail() {
             </span>
           </div>
         </div>
-        <div className="border-t pt-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Dosya Yükle</h3>
-          <div className="flex items-center space-x-4">
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-            />
-            <button
-              onClick={handleUpload}
-              disabled={!selectedFile || uploading}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:bg-gray-400"
-            >
-              {uploading ? 'Yükleniyor...' : 'Yükle'}
-            </button>
-          </div>
-        </div>
-        <div className="border-t pt-6 mt-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Yüklenmiş Dosyalar</h3>
-          {sorusturma.dosyalar.length > 0 ? (
-            <ul className="divide-y divide-gray-200">
-              {sorusturma.dosyalar.map(dosya => (
-                <li key={dosya.id} className="py-3 flex justify-between items-center">
-                  <span className="text-gray-700">{dosya.dosya_adi}</span>
-                  <a href={dosya.dosya_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    Görüntüle / İndir
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">Bu soruşturmaya henüz dosya yüklenmemiş.</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Dosya Yönetimi</h3>
+          <div className="p-4 border rounded-lg bg-gray-50">
+            <h4 className="font-semibold text-gray-700 mb-3">Yeni Dosya Yükle</h4>
+            <div className="flex items-center space-x-4">
+              <input 
+                type="file" 
+                onChange={handleFileChange} 
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              />
+              <button 
+                onClick={handleUpload} 
+                disabled={!selectedFile || uploading}
+                className="flex-shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-50
