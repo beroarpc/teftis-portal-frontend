@@ -19,7 +19,7 @@ export function InvestigationDetail() {
     }
     try {
       setLoading(true);
-      const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/sorusturmalar/</span>{id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Soruşturma detayları çekilemedi.');
@@ -51,7 +51,7 @@ export function InvestigationDetail() {
     formData.append('file', selectedFile);
 
     try {
-      const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/sorusturmalar/</span>{id}/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${id}/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
@@ -70,6 +70,12 @@ export function InvestigationDetail() {
   if (loading) return <div className="p-8 text-center text-lg">Yükleniyor...</div>;
   if (error) return <div className="p-8 text-center text-lg text-red-600">Hata: {error}</div>;
   if (!sorusturma) return null;
+
+  // Hatanın olduğu yerdeki kod, daha güvenli olması için basitleştirildi.
+  const baseOnayClasses = "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset";
+  const dynamicOnayClasses = sorusturma.onay_durumu === 'Onaylandı'
+    ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
+    : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20';
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -97,23 +103,49 @@ export function InvestigationDetail() {
           </div>
           <div>
             <h3 className="font-semibold text-gray-600">Onay Durumu:</h3>
-            <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${sorusturma.onay_durumu === 'Onaylandı' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' : 'bg-yellow-50 text-yellow-800 ring-yellow-600/20'}`}>
+            <span className={`${baseOnayClasses} ${dynamicOnayClasses}`}>
               {sorusturma.onay_durumu}
             </span>
           </div>
         </div>
-
         <div className="mt-6">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Dosya Yönetimi</h3>
           <div className="p-4 border rounded-lg bg-gray-50">
             <h4 className="font-semibold text-gray-700 mb-3">Yeni Dosya Yükle</h4>
             <div className="flex items-center space-x-4">
-              <input 
-                type="file" 
-                onChange={handleFileChange} 
+              <input
+                type="file"
+                onChange={handleFileChange}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
               />
-              <button 
-                onClick={handleUpload} 
+              <button
+                onClick={handleUpload}
                 disabled={!selectedFile || uploading}
-                className="flex-shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-50
+                className="flex-shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:bg-gray-400"
+              >
+                {uploading ? 'Yükleniyor...' : 'Yükle'}
+              </button>
+            </div>
+          </div>
+          <div className="mt-6">
+            <h4 className="font-semibold text-gray-700 mb-3">Yüklenmiş Dosyalar</h4>
+            {sorusturma.dosyalar.length > 0 ? (
+              <ul className="divide-y divide-gray-200 border rounded-md">
+                {sorusturma.dosyalar.map(dosya => (
+                  <li key={dosya.id} className="px-4 py-3 flex justify-between items-center">
+                    <span className="text-gray-700">{dosya.dosya_adi}</span>
+                    <a href={dosya.dosya_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                      Görüntüle / İndir
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-sm">Bu soruşturmaya henüz dosya yüklenmemiş.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
