@@ -48,7 +48,7 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
               id="sorusturmaNo"
               value={sorusturmaNo}
               onChange={(e) => setSorusturmaNo(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
               required
             />
           </div>
@@ -59,7 +59,7 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
               rows="4"
               value={konu}
               onChange={(e) => setKonu(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
               required
             ></textarea>
           </div>
@@ -78,7 +78,6 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
   );
 }
 
-// DEĞİŞİKLİK BURADA: 'export function' yerine 'export default function' kullanıyoruz.
 export default function InvestigationList() {
   const [sorusturmalar, setSorusturmalar] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +161,7 @@ export default function InvestigationList() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
               >
                 Yeni Soruşturma Ekle
               </button>

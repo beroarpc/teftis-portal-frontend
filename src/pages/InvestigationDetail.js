@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config'; // DÜZELTME: Bu yol artık doğru
+import { API_BASE_URL } from '../config';
 import toast from 'react-hot-toast';
 
 export function InvestigationDetail() {
@@ -158,7 +158,7 @@ export function InvestigationDetail() {
                   <select
                     value={selectedMufettis}
                     onChange={(e) => setSelectedMufettis(e.target.value)}
-                    className="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300"
                   >
                     <option value="">Bir müfettiş seçin...</option>
                     {mufettisler.map(mufettis => (
