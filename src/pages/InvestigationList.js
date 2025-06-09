@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from 'config';
+import toast from 'react-hot-toast';
 
 function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
@@ -29,10 +30,11 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
       if (!response.ok) {
         throw new Error('Soruşturma oluşturulamadı.');
       }
+      toast.success('Soruşturma başarıyla eklendi!');
       onInvestigationAdded();
       onClose();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -123,15 +125,19 @@ export default function InvestigationList() {
   
   const handleOnayla = async (sorusturmaId) => {
     const token = localStorage.getItem('token');
+    const loadingToast = toast.loading('Onaylanıyor...');
     try {
         const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${sorusturmaId}/onayla`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Onaylama işlemi başarısız.');
+        toast.success("Soruşturma onaylandı!");
         fetchInitialData();
     } catch(err) {
-        console.error("Onaylama hatası:", err.message);
+        toast.error(err.message);
+    } finally {
+        toast.dismiss(loadingToast);
     }
   };
 

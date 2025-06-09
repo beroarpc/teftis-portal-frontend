@@ -35,7 +35,6 @@ export default function Dashboard() {
         handleLogout();
       }
     };
-
     fetchDashboardData();
   }, [navigate]);
 
@@ -54,7 +53,6 @@ export default function Dashboard() {
           Çıkış Yap
         </button>
       </div>
-
       <nav className="mb-6 border-b pb-4">
         <Link 
           to="/sorusturmalar"
@@ -63,7 +61,6 @@ export default function Dashboard() {
           Soruşturmaları Görüntüle
         </Link>
       </nav>
-
       <div className="mt-4">
         <p className="text-xl mb-2">{data.karsilama}</p>
         <p>Denetim sayısı: {data.denetim_sayisi}</p>

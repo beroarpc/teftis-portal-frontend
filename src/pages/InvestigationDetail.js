@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from 'config';
 import toast from 'react-hot-toast';
 
 export function InvestigationDetail() {
