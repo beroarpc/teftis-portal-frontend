@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from 'config';
 import toast from 'react-hot-toast';
+
+const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
 function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
@@ -94,24 +95,19 @@ export default function InvestigationList() {
       navigate('/login');
       return;
     }
-    
     setLoading(true);
     try {
       const [sorusturmalarRes, dashboardRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/sorusturmalar`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
-
       if (!sorusturmalarRes.ok || !dashboardRes.ok) {
         throw new Error('Veri çekilemedi.');
       }
-      
       const sorusturmalarData = await sorusturmalarRes.json();
       const dashboardData = await dashboardRes.json();
-
       setSorusturmalar(sorusturmalarData);
       setUserRole(dashboardData.rol);
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -140,7 +136,6 @@ export default function InvestigationList() {
         toast.dismiss(loadingToast);
     }
   };
-
 
   const handleInvestigationAdded = () => {
     fetchInitialData();

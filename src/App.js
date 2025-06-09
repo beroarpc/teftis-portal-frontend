@@ -1,11 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
-
-import Login from "pages/Login"; 
-import Dashboard from "pages/Dashboard";
-import InvestigationList from "pages/InvestigationList";
-import { InvestigationDetail } from "pages/InvestigationDetail";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import InvestigationList from "./pages/InvestigationList";
+import { InvestigationDetail } from "./pages/InvestigationDetail";
 
 function App() {
   return (

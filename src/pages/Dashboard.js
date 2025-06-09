@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+
+const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -17,17 +18,12 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-
     const fetchDashboardData = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/dashboard-data`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (!response.ok) {
-          throw new Error("Yetki hatası");
-        }
+        if (!response.ok) throw new Error("Yetki hatası");
         const dashboardData = await response.json();
         setData(dashboardData);
       } catch (error) {

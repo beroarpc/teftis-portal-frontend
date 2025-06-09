@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from 'config';
 import toast from 'react-hot-toast';
+
+const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
 export function InvestigationDetail() {
   const { id } = useParams();
@@ -28,20 +29,16 @@ export function InvestigationDetail() {
         fetch(`${API_BASE_URL}/api/mufettisler`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
-
       if (!sorusturmaRes.ok || !mufettislerRes.ok || !dashboardRes.ok) throw new Error('Veriler çekilemedi.');
-      
       const sorusturmaData = await sorusturmaRes.json();
       const mufettislerData = await mufettislerRes.json();
       const dashboardData = await dashboardRes.json();
-
       setSorusturma(sorusturmaData);
       setMufettisler(mufettislerData);
       setUserInfo(dashboardData);
       if (sorusturmaData.atanan_mufettis_id) {
           setSelectedMufettis(sorusturmaData.atanan_mufettis_id);
       }
-
     } catch (err) {
       setError(err.message);
     } finally {
