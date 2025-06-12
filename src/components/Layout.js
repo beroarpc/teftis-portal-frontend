@@ -41,7 +41,18 @@ export default function Layout() {
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight text-gray-900">Teftiş Kurulu Portalı</h1>
+          
+          <div className="flex items-center space-x-3">
+            <img 
+              className="h-8 w-auto" 
+              src="/logo.png" 
+              alt="Şirket Logosu" 
+            />
+            <h1 className="text-xl font-bold tracking-tight text-gray-900">
+              Teftiş Kurulu Başkanlığı Soruşturma Portalı
+            </h1>
+          </div>
+
           <button
             onClick={handleLogout}
             className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
@@ -50,7 +61,7 @@ export default function Layout() {
           </button>
         </div>
       </header>
-
+      
       <nav className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-12 items-center justify-start space-x-6">
@@ -66,10 +77,9 @@ export default function Layout() {
             </div>
         </div>
       </nav>
-
+      
       <main>
         <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-          {/* Sayfa içerikleri burada görünecek */}
           <Outlet /> 
         </div>
       </main>
