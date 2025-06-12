@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import InvestigationList from "./pages/InvestigationList";
 import { InvestigationDetail } from "./pages/InvestigationDetail";
+import PersonelList from "./pages/PersonelList";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sorusturmalar" element={<InvestigationList />} />
         <Route path="/sorusturma-detay/:id" element={<InvestigationDetail />} />
+        <Route path="/personel" element={<PersonelList />} />
         <Route path="/" element={<Login />} />
       </Routes>
     </Router>

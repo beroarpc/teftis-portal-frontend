@@ -49,12 +49,18 @@ export default function Dashboard() {
           Çıkış Yap
         </button>
       </div>
-      <nav className="mb-6 border-b pb-4">
+      <nav className="mb-6 pb-4 flex flex-col sm:flex-row sm:space-x-6">
         <Link 
           to="/sorusturmalar"
           className="text-lg text-blue-600 hover:underline font-semibold"
         >
-          Soruşturmaları Görüntüle
+          Soruşturma Yönetimi
+        </Link>
+        <Link 
+          to="/personel"
+          className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0"
+        >
+          Personel Yönetimi
         </Link>
       </nav>
       <div className="mt-4">
