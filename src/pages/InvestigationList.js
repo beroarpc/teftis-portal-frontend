@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
-
-import ConfirmationModal from '../components/ConfirmationModal';
 
 function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded, personeller }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
