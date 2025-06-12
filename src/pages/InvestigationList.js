@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
-
-import ConfirmationModal from '../components/ConfirmationModal';
 
 function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded, personeller }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
@@ -29,8 +28,8 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded, personel
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-            sorusturma_no: sorusturmaNo, 
+        body: JSON.stringify({
+            sorusturma_no: sorusturmaNo,
             konu: konu,
             personel_id: personelId
         }),
@@ -125,7 +124,7 @@ export default function InvestigationList() {
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
-  
+
   const openConfirmModal = (id) => {
     setSelectedInvestigationId(id);
     setIsConfirmModalOpen(true);
