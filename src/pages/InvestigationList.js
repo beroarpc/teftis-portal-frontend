@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import ConfirmationModal from '../components/ConfirmationModal';
 
 const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
+
+import ConfirmationModal from '../components/ConfirmationModal';
 
 function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded, personeller }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
@@ -94,6 +95,7 @@ export default function InvestigationList() {
   const [userRole, setUserRole] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedInvestigationId, setSelectedInvestigationId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   const fetchInitialData = useCallback(async () => {
@@ -149,6 +151,12 @@ export default function InvestigationList() {
     }
   };
 
+  const filteredSorusturmalar = sorusturmalar.filter(sorusturma =>
+    sorusturma.sorusturma_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sorusturma.konu.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (sorusturma.hakkindaki_personel && sorusturma.hakkindaki_personel.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   if (loading) return <div className="p-8 text-center text-lg">Yükleniyor...</div>;
   if (error) return <div className="p-8 text-center text-lg text-red-600">Hata: {error}</div>;
 
@@ -175,6 +183,15 @@ export default function InvestigationList() {
             )}
           </div>
         </div>
+        <div className="mt-6 mb-4">
+          <input
+            type="text"
+            placeholder="Listede ara (No, Konu, Personel...)"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="block w-full max-w-sm rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -190,8 +207,8 @@ export default function InvestigationList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {sorusturmalar.length > 0 ? (
-                    sorusturmalar.map((sorusturma) => (
+                  {filteredSorusturmalar.length > 0 ? (
+                    filteredSorusturmalar.map((sorusturma) => (
                       <tr key={sorusturma.id}>
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                           <Link to={`/sorusturma-detay/${sorusturma.id}`} className="text-blue-600 hover:underline">{sorusturma.sorusturma_no}</Link>
@@ -217,7 +234,7 @@ export default function InvestigationList() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="text-center py-4 text-gray-500">Henüz kayıtlı bir soruşturma bulunmamaktadır.</td>
+                      <td colSpan="6" className="text-center py-4 text-gray-500">Aramanızla eşleşen kayıt bulunamadı.</td>
                     </tr>
                   )}
                 </tbody>
