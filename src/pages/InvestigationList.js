@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 
 const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
+import ConfirmationModal from '../components/ConfirmationModal';
+
 function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded, personeller }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
   const [konu, setKonu] = useState('');
@@ -89,8 +91,10 @@ export default function InvestigationList() {
   const [personeller, setPersoneller] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [selectedInvestigationId, setSelectedInvestigationId] = useState(null);
   const navigate = useNavigate();
 
   const fetchInitialData = useCallback(async () => {
@@ -104,11 +108,9 @@ export default function InvestigationList() {
         fetch(`${API_BASE_URL}/api/personel`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
       if (!sorusturmalarRes.ok || !dashboardRes.ok || !personelRes.ok) throw new Error('Veri çekilemedi.');
-      
       const sorusturmalarData = await sorusturmalarRes.json();
       const dashboardData = await dashboardRes.json();
       const personelData = await personelRes.json();
-
       setSorusturmalar(sorusturmalarData);
       setUserRole(dashboardData.rol);
       setPersoneller(personelData);
@@ -123,11 +125,16 @@ export default function InvestigationList() {
     fetchInitialData();
   }, [fetchInitialData]);
   
-  const handleOnayla = async (sorusturmaId) => {
+  const openConfirmModal = (id) => {
+    setSelectedInvestigationId(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmOnayla = async () => {
     const token = localStorage.getItem('token');
     const loadingToast = toast.loading('Onaylanıyor...');
     try {
-        const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${sorusturmaId}/onayla`, {
+        const response = await fetch(`${API_BASE_URL}/api/sorusturmalar/${selectedInvestigationId}/onayla`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -138,6 +145,8 @@ export default function InvestigationList() {
         toast.error(err.message);
     } finally {
         toast.dismiss(loadingToast);
+        setIsConfirmModalOpen(false);
+        setSelectedInvestigationId(null);
     }
   };
 
@@ -146,7 +155,15 @@ export default function InvestigationList() {
 
   return (
     <>
-      <AddInvestigationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onInvestigationAdded={fetchInitialData} personeller={personeller} />
+      <AddInvestigationModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onInvestigationAdded={fetchInitialData} personeller={personeller} />
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmOnayla}
+        title="Soruşturmayı Onayla"
+        message="Bu soruşturmayı onaylamak istediğinizden emin misiniz? Bu işlem geri alınamaz."
+        confirmButtonText="Evet, Onayla"
+      />
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
@@ -155,7 +172,7 @@ export default function InvestigationList() {
           </div>
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             {(userRole === 'başkan' || userRole === 'müfettiş') && (
-              <button type="button" onClick={() => setIsModalOpen(true)} className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">Yeni Soruşturma Ekle</button>
+              <button type="button" onClick={() => setIsAddModalOpen(true)} className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">Yeni Soruşturma Ekle</button>
             )}
           </div>
         </div>
@@ -194,7 +211,7 @@ export default function InvestigationList() {
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                            {userRole === 'başkan' && sorusturma.onay_durumu === 'Onay Bekliyor' && (
-                             <button onClick={() => handleOnayla(sorusturma.id)} className="text-indigo-600 hover:text-indigo-900">Onayla</button>
+                             <button onClick={() => openConfirmModal(sorusturma.id)} className="text-indigo-600 hover:text-indigo-900">Onayla</button>
                            )}
                         </td>
                       </tr>
