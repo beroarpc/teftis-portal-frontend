@@ -62,6 +62,12 @@ export default function Dashboard() {
         >
           Personel Yönetimi
         </Link>
+        <Link 
+          to="/raporlar"
+          className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0"
+        >
+          Raporlama
+        </Link>
       </nav>
       <div className="mt-4">
         <p className="text-xl mb-2">{data.karsilama}</p>

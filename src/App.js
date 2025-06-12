@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import InvestigationList from "./pages/InvestigationList";
 import { InvestigationDetail } from "./pages/InvestigationDetail";
 import PersonelList from "./pages/PersonelList";
+import Reports from "./pages/Reports"; // YENİ EKLENDİ
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/sorusturmalar" element={<InvestigationList />} />
         <Route path="/sorusturma-detay/:id" element={<InvestigationDetail />} />
         <Route path="/personel" element={<PersonelList />} />
+        <Route path="/raporlar" element={<Reports />} /> // YENİ EKLENDİ
         <Route path="/" element={<Login />} />
       </Routes>
     </Router>
