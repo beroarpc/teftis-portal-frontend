@@ -7,6 +7,7 @@ import InvestigationList from "./pages/InvestigationList";
 import { InvestigationDetail } from "./pages/InvestigationDetail";
 import PersonelList from "./pages/PersonelList";
 import Reports from "./pages/Reports";
+import UserManagement from "./pages/UserManagement"; 
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/sorusturma-detay/:id" element={<InvestigationDetail />} />
         <Route path="/personel" element={<PersonelList />} />
         <Route path="/raporlar" element={<Reports />} />
+        <Route path="/kullanici-yonetimi" element={<UserManagement />} /> 
         <Route path="/" element={<Login />} />
       </Routes>
     </Router>

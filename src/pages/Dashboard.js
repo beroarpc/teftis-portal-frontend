@@ -50,24 +50,20 @@ export default function Dashboard() {
         </button>
       </div>
       <nav className="mb-6 pb-4 flex flex-col sm:flex-row sm:space-x-6">
-        <Link 
-          to="/sorusturmalar"
-          className="text-lg text-blue-600 hover:underline font-semibold"
-        >
+        <Link to="/sorusturmalar" className="text-lg text-blue-600 hover:underline font-semibold">
           Soruşturma Yönetimi
         </Link>
-        <Link 
-          to="/personel"
-          className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0"
-        >
+        <Link to="/personel" className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0">
           Personel Yönetimi
         </Link>
-        <Link 
-          to="/raporlar"
-          className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0"
-        >
+        <Link to="/raporlar" className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0">
           Raporlama
         </Link>
+        {data.rol === 'başkan' && (
+          <Link to="/kullanici-yonetimi" className="text-lg text-blue-600 hover:underline font-semibold mt-2 sm:mt-0">
+            Kullanıcı Yönetimi
+          </Link>
+        )}
       </nav>
       <div className="mt-4">
         <p className="text-xl mb-2">{data.karsilama}</p>
