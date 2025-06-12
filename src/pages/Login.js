@@ -38,8 +38,21 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Teftiş Giriş</h2>
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <div className="flex flex-col items-center mb-6">
+          <img 
+            className="h-12 w-auto mb-4" 
+            src="/logo.png" 
+            alt="Şirket Logosu" 
+          />
+          <h2 className="text-2xl font-bold text-center text-gray-800">
+            Teftiş Kurulu Başkanlığı Giriş
+          </h2>
+        </div>
+        
         <input
           type="text"
           placeholder="Kullanıcı Adı"
