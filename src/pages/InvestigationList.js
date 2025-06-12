@@ -4,24 +4,13 @@ import toast from 'react-hot-toast';
 
 const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
-function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
+function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded, personeller }) {
   const [sorusturmaNo, setSorusturmaNo] = useState('');
   const [konu, setKonu] = useState('');
   const [personelId, setPersonelId] = useState('');
-  const [personeller, setPersoneller] = useState([]);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen) {
-      const token = localStorage.getItem('token');
-      fetch(`${API_BASE_URL}/api/personel`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => setPersoneller(data))
-      .catch(() => setError('Personel listesi çekilemedi.'));
-    }
-  }, [isOpen]);
+  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,6 +86,7 @@ function AddInvestigationModal({ isOpen, onClose, onInvestigationAdded }) {
 
 export default function InvestigationList() {
   const [sorusturmalar, setSorusturmalar] = useState([]);
+  const [personeller, setPersoneller] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,15 +98,20 @@ export default function InvestigationList() {
     if (!token) navigate('/login');
     setLoading(true);
     try {
-      const [sorusturmalarRes, dashboardRes] = await Promise.all([
+      const [sorusturmalarRes, dashboardRes, personelRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/sorusturmalar`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${API_BASE_URL}/dashboard-data`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/api/personel`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
-      if (!sorusturmalarRes.ok || !dashboardRes.ok) throw new Error('Veri çekilemedi.');
+      if (!sorusturmalarRes.ok || !dashboardRes.ok || !personelRes.ok) throw new Error('Veri çekilemedi.');
+      
       const sorusturmalarData = await sorusturmalarRes.json();
       const dashboardData = await dashboardRes.json();
+      const personelData = await personelRes.json();
+
       setSorusturmalar(sorusturmalarData);
       setUserRole(dashboardData.rol);
+      setPersoneller(personelData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -151,7 +146,7 @@ export default function InvestigationList() {
 
   return (
     <>
-      <AddInvestigationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onInvestigationAdded={fetchInitialData} />
+      <AddInvestigationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onInvestigationAdded={fetchInitialData} personeller={personeller} />
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
