@@ -7,75 +7,11 @@ const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
 function EditPersonelModal({ isOpen, onClose, onPersonelUpdated, personel }) {
   const [formData, setFormData] = useState({});
+  const [profilResmi, setProfilResmi] = useState(null);
 
   useEffect(() => {
-    if (personel) {
-      setFormData(personel);
-    }
+    if (personel) { setFormData(personel); }
   }, [personel]);
-
-  if (!isOpen) return null;
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    const loadingToast = toast.loading('Personel bilgileri güncelleniyor...');
-    try {
-      const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/personel/</span>{personel.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Personel güncellenemedi.');
-      toast.success(data.message);
-      onPersonelUpdated();
-      onClose();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-        toast.dismiss(loadingToast);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Personel Bilgilerini Düzenle</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" name="sicil_no" placeholder="Sicil No" value={formData.sicil_no || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" name="ad" placeholder="Ad" value={formData.ad || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" name="soyad" placeholder="Soyad" value={formData.soyad || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" name="unvan" placeholder="Unvan" value={formData.unvan || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
-          <input type="text" name="sube" placeholder="Şube" value={formData.sube || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
-          <div className="flex items-center justify-end space-x-4 mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">İptal</button>
-            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Güncelle</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function AddPersonelModal({ isOpen, onClose, onPersonelAdded }) {
-  const [formData, setFormData] = useState({
-    sicil_no: '',
-    ad: '',
-    soyad: '',
-    unvan: '',
-    sube: ''
-  });
-  const [profilResmi, setProfilResmi] = useState(null);
-  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
@@ -89,33 +25,94 @@ function AddPersonelModal({ isOpen, onClose, onPersonelAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
+    const token = localStorage.getItem('token');
     const data = new FormData();
-    Object.keys(formData).forEach(key => {
-      data.append(key, formData[key]);
-    });
-    if (profilResmi) {
-      data.append('profil_resmi', profilResmi);
-    }
+    Object.keys(formData).forEach(key => data.append(key, formData[key]));
+    if (profilResmi) data.append('profil_resmi', profilResmi);
+
+    toast.promise(
+        fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/personel/</span>{personel.id}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: data,
+        }).then(res => {
+            if (!res.ok) throw new Error('Personel güncellenemedi.');
+            return res.json();
+        }),
+        {
+            loading: 'Güncelleniyor...',
+            success: (res) => {
+                onPersonelUpdated();
+                onClose();
+                return res.message || 'Başarıyla güncellendi.';
+            },
+            error: 'Bir hata oluştu.',
+        }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6">Personel Bilgilerini Düzenle</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input type="text" name="sicil_no" placeholder="Sicil No" value={formData.sicil_no || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="ad" placeholder="Ad" value={formData.ad || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="soyad" placeholder="Soyad" value={formData.soyad || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="unvan" placeholder="Unvan" value={formData.unvan || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="sube" placeholder="Şube" value={formData.sube || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Profil Resmi Değiştir</label>
+            <input type="file" onChange={handleFileChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+          </div>
+          <div className="flex items-center justify-end space-x-4 mt-6">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">İptal</button>
+            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Güncelle</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddPersonelModal({ isOpen, onClose, onPersonelAdded }) {
+  const [formData, setFormData] = useState({ sicil_no: '', ad: '', soyad: '', unvan: '', sube: '' });
+  const [profilResmi, setProfilResmi] = useState(null);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleFileChange = (e) => setProfilResmi(e.target.files[0]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const data = new FormData();
+    Object.keys(formData).forEach(key => data.append(key, formData[key]));
+    if (profilResmi) data.append('profil_resmi', profilResmi);
 
     const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/personel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: data,
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Personel oluşturulamadı.');
-      toast.success(result.message);
-      onPersonelAdded();
-      onClose();
-    } catch (err) {
-      toast.error(err.message);
-    }
+    toast.promise(
+        fetch(`${API_BASE_URL}/api/personel`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: data,
+        }).then(async(res) => {
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.message || 'Personel oluşturulamadı.');
+            return result;
+        }),
+        {
+            loading: 'Personel ekleniyor...',
+            success: (result) => {
+                onPersonelAdded();
+                onClose();
+                return result.message;
+            },
+            error: (err) => err.message,
+        }
+    );
   };
 
   return (
@@ -189,23 +186,26 @@ export default function PersonelList() {
   const handleConfirmDelete = async () => {
     if (!personelToDelete) return;
     const token = localStorage.getItem('token');
-    const loadingToast = toast.loading(`${personelToDelete.ad} siliniyor...`);
-    try {
-        const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/personel/</span>{personelToDelete.id}`, {
+    toast.promise(
+        fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/personel/</span>{personelToDelete.id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
-        toast.success(data.message);
-        fetchInitialData();
-    } catch(err) {
-        toast.error(err.message);
-    } finally {
-        toast.dismiss(loadingToast);
-        setIsConfirmOpen(false);
-        setPersonelToDelete(null);
-    }
+        }).then(async(res) => {
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message);
+            return data;
+        }),
+        {
+            loading: `${personelToDelete.ad} siliniyor...`,
+            success: (data) => {
+                fetchInitialData();
+                return data.message;
+            },
+            error: (err) => err.message,
+        }
+    );
+    setIsConfirmOpen(false);
+    setPersonelToDelete(null);
   };
 
   if (loading) return <div className="p-8 text-center text-lg">Yükleniyor...</div>;
