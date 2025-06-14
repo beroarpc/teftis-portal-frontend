@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const API_BASE_URL = "https://teftis-portal-backend-2.onrender.com";
 
 function EditPersonelModal({ isOpen, onClose, onPersonelUpdated, personel }) {
-  const [formData, setFormData] = useState(personel);
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    setFormData(personel);
+    if (personel) {
+      setFormData(personel);
+    }
   }, [personel]);
 
   if (!isOpen) return null;
@@ -22,10 +23,10 @@ function EditPersonelModal({ isOpen, onClose, onPersonelUpdated, personel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     const token = localStorage.getItem('token');
+    const loadingToast = toast.loading('Personel bilgileri güncelleniyor...');
     try {
-      const response = await fetch(`${API_BASE_URL}/api/personel/${personel.id}`, {
+      const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/personel/</span>{personel.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -40,19 +41,21 @@ function EditPersonelModal({ isOpen, onClose, onPersonelUpdated, personel }) {
       onClose();
     } catch (err) {
       toast.error(err.message);
+    } finally {
+        toast.dismiss(loadingToast);
     }
   };
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6">Personel Bilgilerini Düzenle</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" name="sicil_no" placeholder="Sicil No" value={formData.sicil_no} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" name="ad" placeholder="Ad" value={formData.ad} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" name="soyad" placeholder="Soyad" value={formData.soyad} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" name="unvan" placeholder="Unvan" value={formData.unvan} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
-          {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+          <input type="text" name="sicil_no" placeholder="Sicil No" value={formData.sicil_no || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="ad" placeholder="Ad" value={formData.ad || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="soyad" placeholder="Soyad" value={formData.soyad || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="unvan" placeholder="Unvan" value={formData.unvan || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="sube" placeholder="Şube" value={formData.sube || ''} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
           <div className="flex items-center justify-end space-x-4 mt-6">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">İptal</button>
             <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Güncelle</button>
@@ -64,31 +67,50 @@ function EditPersonelModal({ isOpen, onClose, onPersonelUpdated, personel }) {
 }
 
 function AddPersonelModal({ isOpen, onClose, onPersonelAdded }) {
-  const [sicilNo, setSicilNo] = useState('');
-  const [ad, setAd] = useState('');
-  const [soyad, setSoyad] = useState('');
-  const [unvan, setUnvan] = useState('');
+  const [formData, setFormData] = useState({
+    sicil_no: '',
+    ad: '',
+    soyad: '',
+    unvan: '',
+    sube: ''
+  });
+  const [profilResmi, setProfilResmi] = useState(null);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    setProfilResmi(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!sicilNo || !ad || !soyad) {
-      setError('Sicil No, Ad ve Soyad alanları zorunludur.');
-      return;
+
+    const data = new FormData();
+    Object.keys(formData).forEach(key => {
+      data.append(key, formData[key]);
+    });
+    if (profilResmi) {
+      data.append('profil_resmi', profilResmi);
     }
+
     const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${API_BASE_URL}/api/personel`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ sicil_no: sicilNo, ad, soyad, unvan }),
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: data,
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Personel oluşturulamadı.');
-      toast.success(data.message);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Personel oluşturulamadı.');
+      toast.success(result.message);
       onPersonelAdded();
       onClose();
     } catch (err) {
@@ -101,10 +123,15 @@ function AddPersonelModal({ isOpen, onClose, onPersonelAdded }) {
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6">Yeni Personel Ekle</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" placeholder="Sicil No" value={sicilNo} onChange={(e) => setSicilNo(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" placeholder="Ad" value={ad} onChange={(e) => setAd(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" placeholder="Soyad" value={soyad} onChange={(e) => setSoyad(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
-          <input type="text" placeholder="Unvan" value={unvan} onChange={(e) => setUnvan(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="sicil_no" placeholder="Sicil No" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="ad" placeholder="Ad" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="soyad" placeholder="Soyad" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" required />
+          <input type="text" name="unvan" placeholder="Unvan" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="sube" placeholder="Şube" onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Profil Resmi</label>
+            <input type="file" onChange={handleFileChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+          </div>
           {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
           <div className="flex items-center justify-end space-x-4 mt-6">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">İptal</button>
@@ -153,18 +180,18 @@ export default function PersonelList() {
     setEditingPersonel(personel);
     setIsEditModalOpen(true);
   };
-  
+
   const handleDeleteClick = (personel) => {
     setPersonelToDelete(personel);
     setIsConfirmOpen(true);
   };
-  
+
   const handleConfirmDelete = async () => {
     if (!personelToDelete) return;
     const token = localStorage.getItem('token');
     const loadingToast = toast.loading(`${personelToDelete.ad} siliniyor...`);
     try {
-        const response = await fetch(`${API_BASE_URL}/api/personel/${personelToDelete.id}`, {
+        const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/personel/</span>{personelToDelete.id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -214,9 +241,8 @@ export default function PersonelList() {
               <table className="min-w-full divide-y divide-gray-300">
                 <thead>
                   <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Sicil No</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ad</th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Soyad</th>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Ad Soyad</th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Sicil No</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Unvan</th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Durum</th>
                     <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0"><span className="sr-only">Eylemler</span></th>
@@ -225,11 +251,16 @@ export default function PersonelList() {
                 <tbody className="divide-y divide-gray-200">
                   {personeller.map((personel) => (
                     <tr key={personel.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{personel.sicil_no}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{personel.ad}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{personel.soyad}</td>
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                        <Link to={`/personel/${personel.id}`} className="text-indigo-600 hover:text-indigo-900">{personel.ad} {personel.soyad}</Link>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{personel.sicil_no}</td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{personel.unvan}</td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{personel.aktif_mi ? 'Aktif' : 'Pasif'}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${personel.aktif_mi ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-red-50 text-red-700 ring-red-600/20'}`}>
+                          {personel.aktif_mi ? 'Aktif' : 'Pasif'}
+                        </span>
+                      </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                         {userRole === 'başkan' && (
                             <div className="flex gap-x-4">
