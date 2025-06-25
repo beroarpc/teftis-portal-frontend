@@ -52,7 +52,7 @@ export default function Layout() {
       <header className="bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <img className="h-8 w-auto" src="/favicon.ico" alt="Şirket Logosu" />
+            <img className="h-8 w-auto" src="/logo.png" alt="Şirket Logosu" />
             <h1 className="text-xl font-bold tracking-tight text-gray-900">
               Teftiş Kurulu Başkanlığı Portalı
             </h1>
